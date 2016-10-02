@@ -28,6 +28,7 @@ public class MyService extends Service {
 		super.onCreate();
 		Log.d(LOG_TAG, "MyService onCreate");
 		es = Executors.newFixedThreadPool(1);
+		
 		someRes = new Object();
 	}
 
@@ -36,7 +37,6 @@ public class MyService extends Service {
 		Context context = getApplicationContext();
 		NotificationManager notificationManager = (NotificationManager) context 
 			.getSystemService(Context.NOTIFICATION_SERVICE); 
-
 		int NOTIFY_ID = 101;
 		notificationManager.cancel(NOTIFY_ID);
 		Log.d(LOG_TAG, "MyService onDestroy");
@@ -45,12 +45,13 @@ public class MyService extends Service {
 
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(LOG_TAG, "MyService onStartCommand");
-		int time = intent.getIntExtra("time", 1);
-        
-		MyTask mt = new MyTask(time);
-		mt.execute();
-		return super.onStartCommand(intent, flags, startId);
-	}
+		
+			int time = intent.getIntExtra("UserID", 1);
+			MyTask mt = new MyTask(time);
+			mt.execute();
+		
+		return Service.START_STICKY;
+		}
 
 	public IBinder onBind(Intent arg0) {
 		return null;
@@ -59,7 +60,7 @@ public class MyService extends Service {
 	class MyTask extends AsyncTask<Void, Void, Void> {
 		boolean online;
 
-		private int time;
+	     int time;
 		public MyTask(int time) {
 			this.time = time;
 			
@@ -75,9 +76,9 @@ public class MyService extends Service {
 		@Override
 		protected Void doInBackground(Void... params) {
 			//
-
+			
 			try {
-				VKRequest req = VKApi.users().get(VKParameters.from(VKApiConst.USER_ID, time ,VKApiConst.FIELDS, "online, online_mobile"));
+				VKRequest req = VKApi.users().get(VKParameters.from(VKApiConst.USER_ID, time, VKApiConst.FIELDS, "online, online_mobile"));
 				req.executeWithListener(new VKRequest.VKRequestListener() {
 						@Override
 						public void onComplete(VKResponse response) {

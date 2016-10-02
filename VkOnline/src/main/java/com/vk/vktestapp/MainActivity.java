@@ -32,9 +32,9 @@ public class MainActivity extends ActionBarActivity
 	public void onclick(View v) {
 		editText = (EditText)findViewById(R.id.EditText1);
 		int userid = Integer.parseInt(editText.getText().toString());
-		startService(new Intent(this, MyService.class).putExtra("time", userid));
-	//	MainActivity.MyTask mt = new MyTask();
-	///	mt.execute();
+		Intent serviceIntent = new Intent(MainActivity.this, MyService.class);
+        serviceIntent.putExtra("UserID", userid);
+        this.startService(serviceIntent);
 	}
 	public void onClickStop(View v) {
 		stopService(new Intent(this, MyService.class));
