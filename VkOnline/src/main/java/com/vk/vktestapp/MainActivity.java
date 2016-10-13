@@ -11,6 +11,7 @@ import android.app.*;
 import android.content.*;
 import android.content.res.*;
 import android.graphics.*;
+import android.util.*;
 
 
 
@@ -21,23 +22,27 @@ public class MainActivity extends ActionBarActivity
 	boolean online;
 	EditText editText;
 	TextView tvInfo;
+	Intent inte;
+	
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
 	 tvInfo = (TextView)findViewById(R.id.tvtext);
-	 
+	 inte = new Intent(this, MyServices.class);
+	    
 		}
 	public void onclick(View v) {
 		editText = (EditText)findViewById(R.id.EditText1);
 		int userid = Integer.parseInt(editText.getText().toString());
-		Intent serviceIntent = new Intent(MainActivity.this, MyService.class);
-        serviceIntent.putExtra("UserID", userid);
-        this.startService(serviceIntent);
+		Intent serviceIntent = new Intent(this, MyServices.class);
+      inte.putExtra("UserID", userid);
+      // this.startService(inte);
+	   this.startService(inte);
 	}
 	public void onClickStop(View v) {
-		stopService(new Intent(this, MyService.class));
+		this.stopService(inte);
     }
 
 	

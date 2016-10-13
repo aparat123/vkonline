@@ -21,7 +21,6 @@ public class MyService extends Service {
 	ExecutorService es;
 	Object someRes;
 	int time;
-
 	
 
 	public void onCreate() {
@@ -31,34 +30,31 @@ public class MyService extends Service {
 		
 		someRes = new Object();
 	}
-
-	public void onDestroy() {
-		super.onDestroy();
-		Context context = getApplicationContext();
-		NotificationManager notificationManager = (NotificationManager) context 
-			.getSystemService(Context.NOTIFICATION_SERVICE); 
-		int NOTIFY_ID = 101;
-		notificationManager.cancel(NOTIFY_ID);
-		Log.d(LOG_TAG, "MyService onDestroy");
-		someRes = null;
-	}
-
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(LOG_TAG, "MyService onStartCommand");
+
+		int time = intent.getIntExtra("UserID", 1);
+		MyTask mt = new MyTask(time);
+		mt.execute();
 		
-			int time = intent.getIntExtra("UserID", 1);
-			MyTask mt = new MyTask(time);
-			mt.execute();
-		
-		return Service.START_STICKY;
+	
+	
+		return Service.START_REDELIVER_INTENT;
 		}
 
 	public IBinder onBind(Intent arg0) {
 		return null;
 	}
-
+	public void onDestroy() {
+		super.onDestroy();
+		stopSelf();
+		notifClose();
+	}
+	
+	
 	class MyTask extends AsyncTask<Void, Void, Void> {
 		boolean online;
+	    String UserName;
 
 	     int time;
 		public MyTask(int time) {
@@ -85,19 +81,22 @@ public class MyService extends Service {
 							final VKApiUser us = ((VKList<VKApiUserFull>)response.parsedModel).get(0);
 
 
+							UserName = us.toString();
+
 							if (us.online) {
 								online = true;
-								main(online);
+
 								//Toast toastq = Toast.makeText(getApplicationContext(), "online", Toast.LENGTH_SHORT); toastq.show(); 
 
 							}
 
 							else{
 								online = false;
-								main(online);
+
 								//Toast toastq = Toast.makeText(getApplicationContext(), "off", Toast.LENGTH_SHORT); toastq.show(); 
 
 							}
+
 						}
 
 
@@ -112,50 +111,50 @@ public class MyService extends Service {
 		@Override
 		protected void onPostExecute(Void result) {
 			super.onPostExecute(result);
-			new MyTask(time).execute();
+			if(online==true) {
+				notifOpen(UserName);
+			//	new MyTask(time).execute();
+				
+			}
+			else{
+				notifClose();
+			//	new MyTask(time).execute();
+			}
 
 		}
+		
 	}
-public void main(boolean onlines){
-	if(onlines==false){
+	
 
+
+	public void notifClose(){
 		Context context = getApplicationContext();
 		NotificationManager notificationManager = (NotificationManager) context 
 			.getSystemService(Context.NOTIFICATION_SERVICE); 
-
 		int NOTIFY_ID = 101;
 		notificationManager.cancel(NOTIFY_ID);
 	}
-	else if(onlines==true) {
-
+	public void notifOpen(String name){
+		
 		Context context = getApplicationContext();
 		Intent notificationIntent = new Intent(context, MainActivity.class); 
 		PendingIntent contentIntent = PendingIntent.getActivity(context, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT); 
 
 		Notification.Builder builder = new Notification.Builder(context); 
-		builder.setContentIntent(contentIntent) .setSmallIcon(R.drawable.ic_launcher) // большая картинка
-			// .setLargeIcon(BitmapFactory.decodeResource(res, R.drawable.hungrycat)) //
-			.setTicker("online") // текст в строке состояния 
-			//.setTicker("Последнее китайское предупреждение!") .setWhen(System.currentTimeMillis()) 
-			.setAutoCancel(true) //
-			// .setContentTitle(res.getString(R.string.notifytitle)) 	 // Заголовок уведомления 
-			.setContentTitle("Напоминание") // .setContentText(res.getString(R.string.notifytext)) 
-			.setContentText("Пользователь online"); 
-		// Текст уведомления //
-		Notification notification = builder.getNotification(); // до API 16
-		//Notification notification = builder.build(); 
+		builder.setContentIntent(contentIntent) 
+			.setSmallIcon(R.drawable.ic_launcher)
+			.setTicker("online")
+			.setAutoCancel(true)
+			.setContentTitle("Напоминание") 
+			.setContentText(name + " в сети");
+		Notification notification = builder.getNotification(); // до API 16 
 		NotificationManager notificationManager = (NotificationManager) context 
 			.getSystemService(Context.NOTIFICATION_SERVICE); 
-
 		int NOTIFY_ID = 101;
 		notificationManager.notify(NOTIFY_ID, notification);
-
-
-
+		
+		
 	}
-}
-	
-
 	
 	
 }
